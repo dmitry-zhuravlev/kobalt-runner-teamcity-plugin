@@ -1,0 +1,19 @@
+apply plugin: 'kotlin'
+apply plugin: 'com.github.rodm.teamcity-agent'
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.teamcity.internal:agent:$teamcityVersion"
+    compile 'com.github.kittinunf.fuel:fuel:1.3.1'
+    compile 'com.github.kittinunf.result:result:1.0.3'
+    compile 'com.google.code.gson:gson:2.7'
+    compile project(':kobalt-runner-common')
+}
+
+teamcity {
+    version = teamcityVersion
+}

@@ -1,0 +1,8 @@
+
+rootProject.name = 'kobalt-runner-teamcity-plugin'
+
+include 'kobalt-runner-common'
+include 'kobalt-runner-agent'
+include 'kobalt-runner-server'
+include 'kobalt-runner-agent-dist'
+include 'kobalt-runner-server-dist'

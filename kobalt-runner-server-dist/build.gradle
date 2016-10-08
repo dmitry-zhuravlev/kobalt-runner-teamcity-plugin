@@ -1,0 +1,55 @@
+apply plugin: 'com.github.rodm.teamcity-server'
+
+ext {
+    downloadsDir = project.findProperty('downloads.dir') ?: "$rootDir/downloads"
+    serversDir = project.findProperty('servers.dir') ?: "$rootDir/servers"
+    java8Home = project.findProperty('java8.home') ?: '/opt/jdk1.8.0_92'
+}
+
+dependencies {
+    agent project(path: ':kobalt-runner-agent-dist', configuration: 'plugin')
+    server project(':kobalt-runner-common')
+    server project(':kobalt-runner-server')
+}
+
+def kotlinLibFiles = {
+    project(':kobalt-runner-server').configurations.compile.files({
+        it.group == 'org.jetbrains.kotlin' && it.name == 'kotlin-stdlib'
+    })
+}
+
+teamcity {
+    version = teamcityVersion
+
+    server {
+        descriptor {
+            name = 'Kobalt Runner'
+            displayName = 'Kobalt Runner'
+            version = project.version
+            vendorName = 'Dmitry Zhuravlev'
+            description = 'TeamCity build runner for Kobalt build system'
+            email = 'dmitry.anatolyevich.zhuravlev@gmail.com'
+            useSeparateClassloader = true
+        }
+
+        downloadsDir = project.downloadsDir
+        baseHomeDir = project.serversDir
+        baseDataDir = 'data'
+
+        files {
+            into('server') {
+                from kotlinLibFiles()
+            }
+        }
+
+        environments {
+            teamcity10 {
+                version = '10.0.2'
+                dataDir = file("$rootDir/servers/TeamCity-$version/data")
+                javaHome = file(java8Home)
+//                serverOptions = '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Dteamcity.development.mode=true -Dteamcity.development.shadowCopyClasses=true'
+//                agentOptions = '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006'
+            }
+        }
+    }
+}
