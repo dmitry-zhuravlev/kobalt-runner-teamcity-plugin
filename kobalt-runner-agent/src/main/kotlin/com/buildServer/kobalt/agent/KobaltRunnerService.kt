@@ -21,8 +21,13 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val env = mutableMapOf<String, String>()
         val params = mutableListOf<String>()
-        val kobaltVersion = KobaltDistributionDownloader.latestKobaltVersionOrDefault()
-        KobaltDistributionDownloader(logger).installIfNeeded(kobaltVersion, {}, {})
+        val distributionDownloader = KobaltDistributionDownloader(logger, runnerParameters.getProxy())
+        val kobaltVersion = distributionDownloader.latestKobaltVersionOrDefault()
+        try {
+            distributionDownloader.installIfNeeded(kobaltVersion, {}, {})
+        } catch(e: DistributionDownloaderException) {
+            throw RunBuildException(e.message)
+        }
         env += environmentVariables
         env[JAVA_HOME] = getJavaHome()
         val kobaltExecAbsolutePath = KobaltPathUtils.kobaltExecutablePath(kobaltVersion).toFile().absolutePath
@@ -32,9 +37,8 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
         } else {
             kobaltExecAbsolutePath
         }
-        params.add(runnerParameters.getJVMArgs())
-        params.add("--buildFile ${runnerParameters.getPathToBuildFile()}")
-        params.add(runnerParameters.getKobaltTasks())
+        val jvmArgs = runnerParameters.getJVMArgs().apply { if(isNotEmpty()) this + " "}
+        params.add("$jvmArgs--buildFile ${runnerParameters.getPathToBuildFile()} ${runnerParameters.getKobaltTasks()}")
         return SimpleProgramCommandLine(env, workingDirectory.path, exePath, params)
     }
 

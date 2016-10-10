@@ -3,7 +3,9 @@ package com.buildServer.kobalt.agent
 import com.buildServer.kobalt.agent.KobaltPathUtils.kobaltDistributionsDir
 import com.buildServer.kobalt.common.KobaltRunnerConstants.MIN_KOBALT_VERSION
 import com.github.kittinunf.fuel.Fuel
+import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
+import com.github.kittinunf.fuel.toolbox.HttpClient
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -11,6 +13,7 @@ import com.intellij.util.io.ZipUtil
 import jetbrains.buildServer.agent.BuildProgressLogger
 import java.io.File
 import java.io.IOException
+import java.net.Proxy
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -25,49 +28,56 @@ import jetbrains.buildServer.log.Loggers.AGENT as AGENT_LOG
  * @author Dmitry Zhuravlev
  *         Date: 08/10/2016
  */
-internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgressLogger) {
+internal class DistributionDownloaderException(override val message: String, override val cause: Throwable) : Exception(message, cause)
+
+internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgressLogger, val proxy: Proxy? = null) {
     companion object {
         private val RELEASE_URL = "https://api.github.com/repos/cbeust/kobalt/releases"
         private val FILE_NAME = "kobalt"
+    }
 
-        fun latestKobaltVersionOrDefault(default: String = MIN_KOBALT_VERSION): String {
+    init {
+        FuelManager.instance.proxy = proxy
+        FuelManager.instance.client = HttpClient(proxy)
+    }
+
+    fun latestKobaltVersionOrDefault(default: String = MIN_KOBALT_VERSION): String {
+        try {
+            return latestKobaltVersionRequest().get(20, TimeUnit.SECONDS)
+        } catch(ex: Exception) {
+            return default
+        }
+    }
+
+
+    fun latestKobaltVersionRequest(): Future<String> {
+        val callable = Callable<String> {
+            var result = MIN_KOBALT_VERSION
             try {
-                return latestKobaltVersionRequest().get(20, TimeUnit.SECONDS)
-            } catch(ex: Exception) {
-                return default
+                val (request, response, responseStr) = RELEASE_URL.httpGet().responseString()
+                result = parseVersion(responseStr.get())
+            } catch(ex: IOException) {
+                AGENT_LOG.warn(
+                        "Couldn't load the release URL: $RELEASE_URL")
+            }
+            result
+        }
+        return Executors.newFixedThreadPool(1).submit(callable)
+    }
+
+    private fun parseVersion(response: String) = with(response) {
+        var version: String = MIN_KOBALT_VERSION
+        val jo = JsonParser().parse(this) as JsonArray
+        if (jo.size() > 0) {
+            var versionName = (jo.get(0) as JsonObject).get("name").asString
+            if (versionName == null || versionName.isBlank()) {
+                versionName = (jo.get(0) as JsonObject).get("tag_name").asString
+            }
+            if (versionName != null) {
+                version = versionName
             }
         }
-
-
-        fun latestKobaltVersionRequest(): Future<String> {
-            val callable = Callable<String> {
-                var result = MIN_KOBALT_VERSION
-                try {
-                    val (request, response, responseStr) = RELEASE_URL.httpGet().responseString()
-                    result = parseVersion(responseStr.get())
-                } catch(ex: IOException) {
-                    AGENT_LOG.warn(
-                            "Couldn't load the release URL: $RELEASE_URL")
-                }
-                result
-            }
-            return Executors.newFixedThreadPool(1).submit(callable)
-        }
-
-        private fun parseVersion(response: String) = with(response) {
-            var version: String = MIN_KOBALT_VERSION
-            val jo = JsonParser().parse(this) as JsonArray
-            if (jo.size() > 0) {
-                var versionName = (jo.get(0) as JsonObject).get("name").asString
-                if (versionName == null || versionName.isBlank()) {
-                    versionName = (jo.get(0) as JsonObject).get("tag_name").asString
-                }
-                if (versionName != null) {
-                    version = versionName
-                }
-            }
-            version
-        }
+        version
     }
 
     fun installIfNeeded(version: String, onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit)
@@ -78,7 +88,7 @@ internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgre
     }
 
     fun installLatestIfNeeded(onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit)
-            = KobaltDistributionDownloader.latestKobaltVersionOrDefault().let { latestVersion ->
+            = latestKobaltVersionOrDefault().let { latestVersion ->
         if (!Files.exists(KobaltPathUtils.kobaltExecutablePath(latestVersion))) {
             install(version = latestVersion, onSuccessDownload = onSuccessDownload, onSuccessInstall = onSuccessInstall)
         }
@@ -97,6 +107,7 @@ internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgre
             AGENT_LOG.info("Downloading $fileName ...")
             val file = localZipFile.toFile()
             download(version, file)
+            onSuccessDownload(version)
             AGENT_LOG.info("Download complete $fileName")
 
             if (!file.exists()) {
@@ -128,9 +139,11 @@ internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgre
     private fun download(version: String, file: File) {
         val downloadUrl = "http://beust.com/kobalt/kobalt-$version.zip"
         buildProgressLogger.progressStarted("Downloading $downloadUrl")
-        Fuel.download(downloadUrl).destination { response, url ->
+        val (request, response, result) = Fuel.download(downloadUrl).destination { response, url ->
             file
-        }.responseString()
+        }.response()
+        val (data, error) = result //TODO it is not a good idea to load all bytes in memory
+        if (error != null) throw  throw DistributionDownloaderException("Download of $downloadUrl failed with error ${error.exception.message ?: ""}", error)
         buildProgressLogger.progressMessage("Download complete")
         buildProgressLogger.progressFinished()
     }
