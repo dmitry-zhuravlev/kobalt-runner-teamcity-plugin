@@ -3,4 +3,5 @@
 
 <beans default-autowire="constructor">
     <bean id="kobaltRunType" class="com.buildServer.kobalt.server.KobaltRunType"/>
+    <bean class="com.buildServer.kobalt.server.KobaltRunnerDiscoveryExtension"/>
 </beans>

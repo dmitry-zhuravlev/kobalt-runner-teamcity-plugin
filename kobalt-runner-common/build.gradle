@@ -1,9 +1,17 @@
 apply plugin: 'kotlin'
 
+repositories {
+    maven {
+       url 'http://download.jetbrains.com/teamcity-repository'
+    }
+}
+
 sourceSets {
     main.java.srcDirs += 'src/main/kotlin'
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.teamcity.idea:obsolete-openapi:$teamcityVersion"
+    compile "org.jetbrains.teamcity:common-api:$teamcityVersion"
 }

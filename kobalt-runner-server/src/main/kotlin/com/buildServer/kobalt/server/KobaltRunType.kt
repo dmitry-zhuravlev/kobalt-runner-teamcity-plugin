@@ -1,6 +1,7 @@
 package com.buildServer.kobalt.server
 
-import com.buildServer.kobalt.common.KobaltRunnerConstants
+import com.buildServer.kobalt.common.KobaltPathUtils
+import com.buildServer.kobalt.common.KobaltRunnerConstants.KOBALT_TASKS
 import com.buildServer.kobalt.common.KobaltRunnerConstants.PATH_TO_BUILD_FILE
 import com.buildServer.kobalt.common.KobaltRunnerConstants.RUNNER_TYPE
 import jetbrains.buildServer.serverSide.RunType
@@ -11,7 +12,7 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor
  * @author Dmitry Zhuravlev
  *         Date:  07.10.2016
  */
-open class KobaltRunType(runTypeRegistry: RunTypeRegistry, val pluginDescriptor: PluginDescriptor) : RunType() {
+open internal class KobaltRunType(runTypeRegistry: RunTypeRegistry, val pluginDescriptor: PluginDescriptor) : RunType() {
 
     init {
         runTypeRegistry.registerRunType(this)
@@ -29,6 +30,21 @@ open class KobaltRunType(runTypeRegistry: RunTypeRegistry, val pluginDescriptor:
 
     override fun getRunnerPropertiesProcessor() = null
 
-    override fun getDefaultRunnerProperties() = mutableMapOf(PATH_TO_BUILD_FILE to KobaltRunnerConstants.DEFAULT_KOBALT_BUILD_FILE_LOCATION)
+    override fun getDefaultRunnerProperties() = mutableMapOf(
+            PATH_TO_BUILD_FILE to KobaltPathUtils.DEFAULT_KOBALT_BUILD_FILE_LOCATION,
+            KOBALT_TASKS to "clean build"
+    )
+
+    override fun describeParameters(parameters: MutableMap<String, String>) = with(StringBuilder()) {
+        val kobaltTasks = parameters[KOBALT_TASKS]
+        val pathToBuildFile = parameters[PATH_TO_BUILD_FILE]
+        if (!kobaltTasks.isNullOrEmpty()) {
+            append("Kobalt Tasks: $kobaltTasks\n")
+        }
+        if (!pathToBuildFile.isNullOrEmpty()) {
+            append("Path to build file: $pathToBuildFile")
+        }
+        toString()
+    }
 }
 

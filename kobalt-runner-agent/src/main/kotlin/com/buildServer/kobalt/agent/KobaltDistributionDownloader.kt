@@ -1,11 +1,11 @@
 package com.buildServer.kobalt.agent
 
-import com.buildServer.kobalt.agent.KobaltPathUtils.kobaltDistributionsDir
+import com.buildServer.kobalt.common.KobaltPathUtils
+import com.buildServer.kobalt.common.KobaltPathUtils.kobaltDistributionsDir
 import com.buildServer.kobalt.common.KobaltRunnerConstants.MIN_KOBALT_VERSION
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
-import com.github.kittinunf.fuel.toolbox.HttpClient
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser

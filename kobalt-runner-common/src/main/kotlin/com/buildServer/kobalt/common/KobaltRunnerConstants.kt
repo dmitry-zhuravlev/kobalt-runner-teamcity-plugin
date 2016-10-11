@@ -6,7 +6,6 @@ package com.buildServer.kobalt.common
  */
 object KobaltRunnerConstants {
     const val MIN_KOBALT_VERSION = "0.864"
-    const val DEFAULT_KOBALT_BUILD_FILE_LOCATION = "kobalt/src/Build.kt"
 
     const val RUNNER_TYPE = "kobalt-runner"
     const val PATH_TO_BUILD_FILE = "ui.kobalt.runner.build.file.path"

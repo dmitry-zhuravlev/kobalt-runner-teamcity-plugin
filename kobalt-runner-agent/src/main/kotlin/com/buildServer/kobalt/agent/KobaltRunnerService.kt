@@ -1,5 +1,6 @@
 package com.buildServer.kobalt.agent
 
+import com.buildServer.kobalt.common.KobaltPathUtils
 import com.intellij.openapi.util.SystemInfo
 import jetbrains.buildServer.RunBuildException
 import jetbrains.buildServer.agent.AgentRuntimeProperties
