@@ -20,16 +20,12 @@ object KobaltPathUtils {
     const val WIN_KOBALT_WRAPPER_NAME = "kobaltw.bat"
     const val UNIX_KOBALT_WRAPPER_NAME = "kobaltw"
 
-    /** Where all the .zip files are extracted */
+    val kobaltWrapperName by lazy { if (isWindows) WIN_KOBALT_WRAPPER_NAME else if (isUnix) UNIX_KOBALT_WRAPPER_NAME else throw RuntimeException("OS not supported") }
     val kobaltDistributionsDir = homeDir(KOBALT_DOT_DIR, "wrapper", "dist")
 
-    fun kobaltWrapperPath(version: String) = Paths.get(FileUtil.toSystemIndependentName(homeDir(KOBALT_DOT_DIR, "wrapper", "dist", "kobalt-$version", "bin",
-            if (isWindows) WIN_KOBALT_WRAPPER_NAME else if (isUnix) UNIX_KOBALT_WRAPPER_NAME else throw RuntimeException("OS not supported"))))
+    fun kobaltWrapperPath(version: String) = Paths.get(FileUtil.toSystemIndependentName(homeDir(KOBALT_DOT_DIR, "wrapper", "dist", "kobalt-$version", "bin", kobaltWrapperName)))
     fun kobaltJarPath(version: String) = Paths.get(FileUtil.toSystemIndependentName(homeDir(KOBALT_DOT_DIR, "wrapper", "dist", "kobalt-$version", KOBALT_DIR, KOBALT_WRAPPER_DIR,"kobalt-$version.jar")))
-
-
     fun kobaltHomeDir(version: String) = FileUtil.toSystemIndependentName(homeDir(KOBALT_DOT_DIR, "wrapper", "dist", "kobalt-$version"))
-
     fun homeDir(vararg dirs: String): String = System.getProperty("user.home") +
             File.separator + dirs.toMutableList().joinToString(File.separator)
 

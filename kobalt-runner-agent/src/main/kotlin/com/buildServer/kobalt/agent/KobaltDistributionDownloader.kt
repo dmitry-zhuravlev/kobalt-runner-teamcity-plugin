@@ -37,7 +37,6 @@ internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgre
     }
 
     init {
-        FuelManager.instance.proxy = proxy
         FuelManager.instance.client = HttpClient(proxy)
     }
 
@@ -82,14 +81,14 @@ internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgre
 
     fun installIfNeeded(version: String, onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit)
             = with(version) {
-        if (!Files.exists(KobaltPathUtils.kobaltWrapperPath(version))) {
+        if (!Files.exists(KobaltPathUtils.kobaltJarPath(version))) {
             install(version = version, onSuccessDownload = onSuccessDownload, onSuccessInstall = onSuccessInstall)
         }
     }
 
     fun installLatestIfNeeded(onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit)
             = latestKobaltVersionOrDefault().let { latestVersion ->
-        if (!Files.exists(KobaltPathUtils.kobaltWrapperPath(latestVersion))) {
+        if (!Files.exists(KobaltPathUtils.kobaltJarPath(latestVersion))) {
             install(version = latestVersion, onSuccessDownload = onSuccessDownload, onSuccessInstall = onSuccessInstall)
         }
     }

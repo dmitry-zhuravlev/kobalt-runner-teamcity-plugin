@@ -40,16 +40,18 @@ open internal class KobaltRunType(runTypeRegistry: RunTypeRegistry, val pluginDe
     override fun describeParameters(parameters: MutableMap<String, String>) = with(StringBuilder()) {
         val kobaltTasks = parameters[KOBALT_TASKS]
         val pathToBuildFile = parameters[PATH_TO_BUILD_FILE]
-        val useKobaltWrapper = parameters[USE_KOBALT_WRAPPER]
+        val useKobaltWrapper = parameters[USE_KOBALT_WRAPPER] ?: false
+
         if (!kobaltTasks.isNullOrEmpty()) {
             append("Kobalt Tasks: $kobaltTasks\n")
         }
+
+        append("Use kobalt wrapper: $useKobaltWrapper\n")
+
         if (!pathToBuildFile.isNullOrEmpty()) {
             append("Path to build file: $pathToBuildFile")
         }
-        if (!useKobaltWrapper.isNullOrEmpty()) {
-            append("Use kobalt wrapper: ${useKobaltWrapper!!.toBoolean()}")
-        }
+
         toString()
     }
 }

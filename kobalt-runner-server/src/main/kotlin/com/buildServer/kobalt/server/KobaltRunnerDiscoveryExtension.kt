@@ -10,6 +10,8 @@ import com.buildServer.kobalt.common.KobaltRunnerConstants.DEFAULT_KOBALT_BUILD_
 import com.buildServer.kobalt.common.KobaltRunnerConstants.KOBALT_TASKS
 import com.buildServer.kobalt.common.KobaltRunnerConstants.PATH_TO_BUILD_FILE
 import com.buildServer.kobalt.common.KobaltRunnerConstants.USE_KOBALT_WRAPPER
+import com.intellij.openapi.util.SystemInfo.isUnix
+import com.intellij.openapi.util.SystemInfo.isWindows
 import jetbrains.buildServer.serverSide.BuildTypeSettings
 import jetbrains.buildServer.serverSide.discovery.BreadthFirstRunnerDiscoveryExtension
 import jetbrains.buildServer.serverSide.discovery.DiscoveredObject
@@ -57,7 +59,9 @@ open internal class KobaltRunnerDiscoveryExtension : BreadthFirstRunnerDiscovery
     }
 
     private fun Element.findWrapper() =
-            subElement(UNIX_KOBALT_WRAPPER_NAME) ?: subElement(WIN_KOBALT_WRAPPER_NAME)
+            if (isUnix) subElement(UNIX_KOBALT_WRAPPER_NAME)
+            else if (isWindows) subElement(WIN_KOBALT_WRAPPER_NAME)
+            else null
 
     private fun Element?.subElement(elemNameToFind: String): Element?
             = (this?.children?.iterator() ?: null)

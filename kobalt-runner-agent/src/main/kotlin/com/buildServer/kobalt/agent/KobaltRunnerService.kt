@@ -1,7 +1,6 @@
 package com.buildServer.kobalt.agent
 
 import com.buildServer.kobalt.common.KobaltPathUtils
-import com.intellij.openapi.util.SystemInfo
 import jetbrains.buildServer.RunBuildException
 import jetbrains.buildServer.agent.AgentRuntimeProperties
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
@@ -25,7 +24,7 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
         val distributionDownloader = KobaltDistributionDownloader(logger, runnerParameters.getProxy())
         val kobaltVersion = distributionDownloader.latestKobaltVersionOrDefault()
         val useKobaltWrapper = runnerParameters.useKobaltWrapper()
-        val kobaltWrapperAbsolutePath = KobaltPathUtils.kobaltWrapperPath(kobaltVersion).toFile().absolutePath
+        val kobaltWrapperAbsolutePath = File(workingDirectory, KobaltPathUtils.kobaltWrapperName).absolutePath
         val kobaltJarAbsolutePath = KobaltPathUtils.kobaltJarPath(kobaltVersion).toFile().absolutePath
         val jvmArgs = runnerParameters.getJVMArgs()
 
@@ -34,11 +33,12 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
         } catch(e: DistributionDownloaderException) {
             throw RunBuildException(e.message)
         }
+
         env += environmentVariables
-        val javaHome = getJavaHome()
-        env[JAVA_HOME] = javaHome
-        var exePath = if (SystemInfo.isUnix) "bash " else ""
-        if (useKobaltWrapper) exePath += kobaltWrapperAbsolutePath else exePath += getJavaExecutable()
+        env[JAVA_HOME] = getJavaHome()
+
+        val exePath = if (useKobaltWrapper) kobaltWrapperAbsolutePath else getJavaExecutable()
+
         params.addAll(jvmArgs)
         if (!useKobaltWrapper) {
             params += "-jar"
