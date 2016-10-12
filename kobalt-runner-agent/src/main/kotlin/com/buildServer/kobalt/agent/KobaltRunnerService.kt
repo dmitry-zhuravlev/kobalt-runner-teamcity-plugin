@@ -24,22 +24,29 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
         val params = mutableListOf<String>()
         val distributionDownloader = KobaltDistributionDownloader(logger, runnerParameters.getProxy())
         val kobaltVersion = distributionDownloader.latestKobaltVersionOrDefault()
+        val useKobaltWrapper = runnerParameters.useKobaltWrapper()
+        val kobaltWrapperAbsolutePath = KobaltPathUtils.kobaltWrapperPath(kobaltVersion).toFile().absolutePath
+        val kobaltJarAbsolutePath = KobaltPathUtils.kobaltJarPath(kobaltVersion).toFile().absolutePath
+        val jvmArgs = runnerParameters.getJVMArgs()
+
         try {
-            distributionDownloader.installIfNeeded(kobaltVersion, {}, {})
+            if (!useKobaltWrapper) distributionDownloader.installIfNeeded(kobaltVersion, {}, {})
         } catch(e: DistributionDownloaderException) {
             throw RunBuildException(e.message)
         }
         env += environmentVariables
-        env[JAVA_HOME] = getJavaHome()
-        val kobaltExecAbsolutePath = KobaltPathUtils.kobaltExecutablePath(kobaltVersion).toFile().absolutePath
-        val exePath = if (SystemInfo.isUnix) {
-            params.add(kobaltExecAbsolutePath)
-            "bash"
-        } else {
-            kobaltExecAbsolutePath
+        val javaHome = getJavaHome()
+        env[JAVA_HOME] = javaHome
+        var exePath = if (SystemInfo.isUnix) "bash " else ""
+        if (useKobaltWrapper) exePath += kobaltWrapperAbsolutePath else exePath += getJavaExecutable()
+        params.addAll(jvmArgs)
+        if (!useKobaltWrapper) {
+            params += "-jar"
+            params += kobaltJarAbsolutePath
         }
-        val jvmArgs = runnerParameters.getJVMArgs().apply { if(isNotEmpty()) this + " "}
-        params.add("$jvmArgs--buildFile ${runnerParameters.getPathToBuildFile()} ${runnerParameters.getKobaltTasks()}")
+        params += "--buildFile"
+        params += runnerParameters.getPathToBuildFile()
+        runnerParameters.getKobaltTasks().forEach { task -> params += task }
         return SimpleProgramCommandLine(env, workingDirectory.path, exePath, params)
     }
 
@@ -50,5 +57,11 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
             buildParameters.allParameters, AgentRuntimeProperties.getCheckoutDir(runnerParameters))
             ?.let { javaHome -> FileUtil.getCanonicalFile(File(javaHome)).path }
             ?: throw RunBuildException("Unable to find Java home")
+
+    private fun getJavaExecutable()
+            = JavaRunnerUtil.findJavaExecutable(runnerParameters[TARGET_JDK_HOME],
+            buildParameters.allParameters, AgentRuntimeProperties.getCheckoutDir(runnerParameters))
+            ?.let { javaExe -> FileUtil.getCanonicalFile(File(javaExe)).path }
+            ?: throw RunBuildException("Unable to find Java executable")
 
 }

@@ -4,6 +4,8 @@ ext {
     downloadsDir = project.findProperty('downloads.dir') ?: "$rootDir/downloads"
     serversDir = project.findProperty('servers.dir') ?: "$rootDir/servers"
     java8Home = project.findProperty('java8.home') ?: '/opt/jdk1.8.0_92'
+    serverOptions = project.findProperty('server.options') ?: '-Dteamcity.development.mode=true -Dteamcity.development.shadowCopyClasses=true'
+    agentOptions = project.findProperty('agent.options') ?: ''
 }
 
 dependencies {
@@ -47,8 +49,8 @@ teamcity {
                 version = '10.0.2'
                 dataDir = file("$rootDir/servers/TeamCity-$version/data")
                 javaHome = file(java8Home)
-//                serverOptions = '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -Dteamcity.development.mode=true -Dteamcity.development.shadowCopyClasses=true'
-//                agentOptions = '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5006'
+                serverOptions = project.serverOptions
+                agentOptions = project.agentOptions
             }
         }
     }

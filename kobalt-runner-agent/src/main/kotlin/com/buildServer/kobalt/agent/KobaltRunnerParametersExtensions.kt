@@ -15,7 +15,7 @@ import java.net.Proxy
 
 fun Map<String, String>.isParameterEnabled(key: String) = containsKey(key) && get(key) == java.lang.Boolean.TRUE.toString()
 
-fun Map<String, String>.getJVMArgs() = newLineToSpaceDelimited(get(JavaRunnerConstants.JVM_ARGS_KEY).orEmpty())
+fun Map<String, String>.getJVMArgs() = newLineToSpaceDelimited(get(JavaRunnerConstants.JVM_ARGS_KEY).orEmpty()).split(" ") + "-Dfile.encoding=UTF-8"
 
 fun Map<String, String>.getProxy() = JavaRunnerUtil.extractJvmArgs(get(JavaRunnerConstants.JVM_ARGS_KEY).orEmpty())
         .fold(ProxyParams()) { proxyParams, param ->
@@ -32,8 +32,8 @@ fun Map<String, String>.getProxy() = JavaRunnerUtil.extractJvmArgs(get(JavaRunne
         }
 
 fun Map<String, String>.getPathToBuildFile() = get(KobaltRunnerConstants.PATH_TO_BUILD_FILE) ?: KobaltPathUtils.DEFAULT_KOBALT_BUILD_FILE_LOCATION
-
-fun Map<String, String>.getKobaltTasks() = get(KobaltRunnerConstants.KOBALT_TASKS).orEmpty()
+fun Map<String, String>.getKobaltTasks() = get(KobaltRunnerConstants.KOBALT_TASKS).orEmpty().split(" ")
+fun Map<String, String>.useKobaltWrapper() = get(KobaltRunnerConstants.USE_KOBALT_WRAPPER)?.toBoolean() ?: false
 
 private class ProxyParams {
     var host: String? = null
