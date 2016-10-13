@@ -14,9 +14,12 @@ dependencies {
     server project(':kobalt-runner-server')
 }
 
-def kotlinLibFiles = {
+def libFiles = {
     project(':kobalt-runner-server').configurations.compile.files({
-        it.group == 'org.jetbrains.kotlin' && it.name == 'kotlin-stdlib'
+        it.group == 'org.jetbrains.kotlin' && it.name == 'kotlin-stdlib' ||
+        it.group == 'com.github.kittinunf.fuel' && it.name == 'fuel' ||
+        it.group == 'com.google.code.gson' && it.name == 'gson' ||
+        it.group == 'com.github.kittinunf.result' && it.name == 'result'
     })
 }
 
@@ -40,7 +43,7 @@ teamcity {
 
         files {
             into('server') {
-                from kotlinLibFiles()
+                from libFiles()
             }
         }
 

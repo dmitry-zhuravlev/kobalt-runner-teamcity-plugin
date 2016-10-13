@@ -1,11 +1,15 @@
 <%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.PATH_TO_BUILD_FILE" %>
 <%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.KOBALT_TASKS" %>
 <%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.USE_KOBALT_WRAPPER" %>
+<%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.*" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="forms" tagdir="/WEB-INF/tags/forms" %>
 <%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<jsp:useBean id="kobaltVersionSelectBean" class="com.buildServer.kobalt.server.KobaltVersionSelectBean"
+             scope="request"/>
 
 <l:settingsGroup title="Kobalt Parameters">
     <tr>
@@ -27,7 +31,41 @@
             <label for="ui.kobalt.runner.wrapper.useWrapper">Use kobalt wrapper to build project</label>
         </td>
     </tr>
+    <tr id="ui.kobalt.runner.version.useVersion.tr">
+        <th><label>Kobalt Version:</label></th>
+        <td><props:selectProperty name="<%=USE_KOBALT_VERSION%>"
+                                  enableFilter="true"
+                                  className="mediumField">
+            <props:option value=""
+                          selected="${not kobaltVersionSelectBean.versionSelected}">-- Choose available versions --</props:option>
+            <c:forEach items="${kobaltVersionSelectBean.versions}" var="version">
+                <props:option value="${version}" selected="${version == kobaltVersionSelectBean.selectedVersion}">
+                    <c:out value="${version}"/></props:option>
+            </c:forEach>
+        </props:selectProperty>
+        </td>
+
+    </tr>
 
 </l:settingsGroup>
 
 <props:javaSettings/>
+
+<script type="text/javascript">
+    var updateKobaltVersionVisibility = function () {
+        var useWrapper = $('ui.kobalt.runner.wrapper.useWrapper').checked;
+        if (useWrapper) {
+            $('ui.kobalt.runner.version.useVersion').disabled = true;
+            BS.Util.hide('ui.kobalt.runner.version.useVersion.tr');
+        }
+        else {
+            $('ui.kobalt.runner.version.useVersion').disabled = false;
+            BS.Util.show('ui.kobalt.runner.version.useVersion.tr');
+        }
+        BS.VisibilityHandlers.updateVisibility($('ui.kobalt.runner.version.useVersion.tr'));
+    };
+
+    $j(BS.Util.escapeId("ui.kobalt.runner.wrapper.useWrapper")).click(updateKobaltVersionVisibility);
+
+    updateKobaltVersionVisibility();
+</script>

@@ -1,4 +1,4 @@
-package com.buildServer.kobalt.agent
+package com.buildServer.kobalt.common.http
 
 import com.github.kittinunf.fuel.core.*
 import java.io.BufferedOutputStream
@@ -14,7 +14,7 @@ import javax.net.ssl.HttpsURLConnection
  * So here is temporary HttpClient with proxy support.
  * //FIXME Will be removed after merge of https://github.com/kittinunf/Fuel/pull/117
  */
-internal class HttpClient(val proxy: Proxy? = null) : Client {
+class HttpClient(val proxy: Proxy? = null) : Client {
     override fun executeRequest(request: Request): Response {
         val response = Response()
         response.url = request.url

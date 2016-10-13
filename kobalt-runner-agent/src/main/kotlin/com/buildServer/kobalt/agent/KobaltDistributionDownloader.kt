@@ -2,13 +2,8 @@ package com.buildServer.kobalt.agent
 
 import com.buildServer.kobalt.common.KobaltPathUtils
 import com.buildServer.kobalt.common.KobaltPathUtils.kobaltDistributionsDir
-import com.buildServer.kobalt.common.KobaltRunnerConstants.MIN_KOBALT_VERSION
+import com.buildServer.kobalt.common.KobaltVersionManager
 import com.github.kittinunf.fuel.Fuel
-import com.github.kittinunf.fuel.core.FuelManager
-import com.github.kittinunf.fuel.httpGet
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import com.intellij.util.io.ZipUtil
 import jetbrains.buildServer.agent.BuildProgressLogger
 import java.io.File
@@ -17,10 +12,6 @@ import java.net.Proxy
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.concurrent.Callable
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
 import jetbrains.buildServer.log.Loggers.AGENT as AGENT_LOG
 
@@ -35,49 +26,7 @@ internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgre
         private val RELEASE_URL = "https://api.github.com/repos/cbeust/kobalt/releases"
         private val FILE_NAME = "kobalt"
     }
-
-    init {
-        FuelManager.instance.client = HttpClient(proxy)
-    }
-
-    fun latestKobaltVersionOrDefault(default: String = MIN_KOBALT_VERSION): String {
-        try {
-            return latestKobaltVersionRequest().get(20, TimeUnit.SECONDS)
-        } catch(ex: Exception) {
-            return default
-        }
-    }
-
-
-    fun latestKobaltVersionRequest(): Future<String> {
-        val callable = Callable<String> {
-            var result = MIN_KOBALT_VERSION
-            try {
-                val (request, response, responseStr) = RELEASE_URL.httpGet().responseString()
-                result = parseVersion(responseStr.get())
-            } catch(ex: IOException) {
-                AGENT_LOG.warn(
-                        "Couldn't load the release URL: $RELEASE_URL")
-            }
-            result
-        }
-        return Executors.newFixedThreadPool(1).submit(callable)
-    }
-
-    private fun parseVersion(response: String) = with(response) {
-        var version: String = MIN_KOBALT_VERSION
-        val jo = JsonParser().parse(this) as JsonArray
-        if (jo.size() > 0) {
-            var versionName = (jo.get(0) as JsonObject).get("name").asString
-            if (versionName == null || versionName.isBlank()) {
-                versionName = (jo.get(0) as JsonObject).get("tag_name").asString
-            }
-            if (versionName != null) {
-                version = versionName
-            }
-        }
-        version
-    }
+  private val kobaltVersionManager = KobaltVersionManager(proxy)
 
     fun installIfNeeded(version: String, onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit)
             = with(version) {
@@ -87,13 +36,13 @@ internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgre
     }
 
     fun installLatestIfNeeded(onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit)
-            = latestKobaltVersionOrDefault().let { latestVersion ->
+            = kobaltVersionManager.latestKobaltVersionOrDefault().let { latestVersion ->
         if (!Files.exists(KobaltPathUtils.kobaltJarPath(latestVersion))) {
             install(version = latestVersion, onSuccessDownload = onSuccessDownload, onSuccessInstall = onSuccessInstall)
         }
     }
 
-    fun install(version: String = latestKobaltVersionOrDefault(), onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit): Path {
+    fun install(version: String = kobaltVersionManager.latestKobaltVersionOrDefault(), onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit): Path {
         val fileName = "$FILE_NAME-$version.zip"
         File(kobaltDistributionsDir).mkdirs()
         val localZipFile = Paths.get(kobaltDistributionsDir, fileName)

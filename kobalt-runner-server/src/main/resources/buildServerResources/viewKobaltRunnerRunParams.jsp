@@ -7,6 +7,11 @@
 <div class="parameter">
     Use Kobalt Wrapper: <strong><props:displayCheckboxValue name="ui.kobalt.runner.wrapper.useWrapper"/></strong>
 </div>
+<c:if test="${empty propertiesBean.properties['ui.kobalt.runner.wrapper.useWrapper']}">
+<div class="parameter">
+    Kobalt Version: <strong><props:displayValue name="ui.kobalt.runner.version.useVersion" emptyValue="latest"/></strong>
+</div>
+</c:if>
 
 <props:viewJavaHome/>
 <props:viewJvmArgs/>
