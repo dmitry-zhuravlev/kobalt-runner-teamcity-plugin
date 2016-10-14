@@ -1,6 +1,3 @@
-<%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.PATH_TO_BUILD_FILE" %>
-<%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.KOBALT_TASKS" %>
-<%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.USE_KOBALT_WRAPPER" %>
 <%@ page import="static com.buildServer.kobalt.common.KobaltRunnerConstants.*" %>
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
@@ -25,6 +22,13 @@
             <span class="smallNote">Path to build file</span>
         </td>
     </tr>
+    <tr class="advancedSetting">
+        <th><label for="ui.kobalt.additional.kobalt.cmd.params">Additional Kobalt command line
+            parameters: </label></th>
+        <td><props:textProperty name="<%=KOBALT_CMD_PARAMS%>" className="longField" expandable="true"/>
+            <span class="smallNote">Additional parameters will be added to the 'Kobalt' command line.<br/>Parameters should be separated with space delimiter</span>
+        </td>
+    </tr>
     <tr>
         <th><label>Kobalt Wrapper:</label></th>
         <td><props:checkboxProperty name="<%=USE_KOBALT_WRAPPER%>"/>
@@ -44,9 +48,17 @@
             </c:forEach>
         </props:selectProperty>
         </td>
-
     </tr>
 
+</l:settingsGroup>
+
+<l:settingsGroup title="Kobalt Settings" className="advancedSetting">
+    <tr class="advancedSetting">
+        <th><label for="ui.kobalt.runner.kobalt.settings">Kobalt settings: </label></th>
+        <td><props:textProperty name="<%=KOBALT_SETTINGS%>" className="longField" expandable="true"/>
+            <span class="smallNote">Enter kobalt settings xml content or leave blank to use the default.</span>
+        </td>
+    </tr>
 </l:settingsGroup>
 
 <props:javaSettings/>
