@@ -19,7 +19,7 @@ ext {
 }
 
 subprojects {
-    group = 'com.github.rodm.teamcity'
+    group = 'com.github.teamcity'
     version = '1.0-SNAPSHOT'
 
     apply plugin: 'kotlin'
