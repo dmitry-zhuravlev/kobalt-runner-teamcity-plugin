@@ -22,10 +22,19 @@ subprojects {
     group = 'com.github.rodm.teamcity'
     version = '1.0-SNAPSHOT'
 
+    apply plugin: 'kotlin'
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
     repositories {
         mavenLocal()
         mavenCentral()
         jcenter()
+        maven {
+            url = 'http://repository.jetbrains.com/all'
+        }
     }
 
 }
