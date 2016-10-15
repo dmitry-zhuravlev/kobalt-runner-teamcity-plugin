@@ -1,14 +1,28 @@
 language: java
 
 jdk:
-  - oraclejdk8
+- oraclejdk8
 
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
 
-script: ./gradlew clean build
+script: "./gradlew clean build"
+
+before_deploy:
+   - export PLUGIN_DIST=$(ls kobalt-runner-server/distributions/kobalt-runner-teamcity-plugin*.zip)
+
+deploy:
+  provider: releases
+  api_key:
+    secure: fvLfmfpIgJ0aPcm/IxSaA0udDIzv+eSYo4NoQ8k8B8xTm9tTbW4c27NNlzTJyokbcVjkxzn43dRj1bUjRSUNIqBRxY8WvSceKyc1V1lLkNPDTPs++QutdZcPpXJ9NH6AOBOFdW//vrGwjRLJciLMZlznEu2DD2+0+mBuxFOpzaJd0G94vVSmux85wiOM9mO6X5cKNiimajNDDfykEyPUcRLbYkB5dvUqc4wbO3UurC2QbzuWaRa7B6eJANsCFBDSgw8PJQ9LIgqc92T1XVSjDID66vrqWLgexvqCINo6Ygb1WuEP5bdL0g2C0lF+c5AzvWE23DwuXaqtfMw4CHnC86aeeAnEsu5btkdtY1SbqRu2m2y635GaaKsfQfUD3HfjhfNWE6dkzDFZE3H6CnwmB9+wpKweOpOy+2lu50SF9SKsdAXu6upWlxVx1q61nDSaF0Q5B3mW5KpseVCqTO0h0mmhy5UYfFaJHsuqJHezbzvdeX3xoNUGjBvP+bT9JRTNpum8G4kZU3Qe/g3ByPP50ali98UBj+/H1MegtcIq+JrAtoimjsYSUPmpFW5ShzUKtZnG6D+JL6xLnM3wi+Th2fMXfNXZTnUZss/WZYnWRUeFtoBlMyHhfh7i9blFBFZrHLC2/CGDnSa5E/hdmP/UaCdJ22sBpLu1urqcVoifNGM=
+  file: "${PLUGIN_DIST}"
+  skip_cleanup: true
+  on:
+    repo: dmitry-zhuravlev/kobalt-runner-teamcity-plugin
+    tags: true
