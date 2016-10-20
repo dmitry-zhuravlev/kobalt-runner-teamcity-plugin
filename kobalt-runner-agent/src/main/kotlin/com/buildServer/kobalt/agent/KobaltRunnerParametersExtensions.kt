@@ -15,7 +15,7 @@ import jetbrains.buildServer.util.StringUtil.newLineToSpaceDelimited
 fun Map<String, String>.isParameterEnabled(key: String) = containsKey(key) && get(key) == java.lang.Boolean.TRUE.toString()
 
 fun Map<String, String>.getJVMArgs() = getJVMArgsString().let {argsStr->
-    val fileEncoding = "-Dfile.encoding=UTF-8"
+    val fileEncoding = "-Dfile.encoding=${Charsets.UTF_8}"
     if (argsStr.isNotEmpty()) argsStr.split(" ") + fileEncoding else listOf(fileEncoding)
 }
 
