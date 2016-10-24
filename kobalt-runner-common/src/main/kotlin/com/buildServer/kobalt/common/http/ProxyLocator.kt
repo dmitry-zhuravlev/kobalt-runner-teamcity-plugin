@@ -17,7 +17,7 @@ class ProxyLocator {
         fun findProxyConfigurationInJVMParams(params: List<String>) = params
                 .fold(ProxyParams()) { proxyParams, param ->
                     if (param.startsWith("-Dhttp.proxyHost") || param.startsWith("-Dhttps.proxyHost")) proxyParams.host = param.split("=")[1]
-                    if (param.startsWith("-Dhttp.proxyPort") || param.startsWith("-Dhttp.proxyPort")) proxyParams.port = param.split("=")[1].toInt()
+                    if (param.startsWith("-Dhttp.proxyPort") || param.startsWith("-Dhttps.proxyPort")) proxyParams.port = param.split("=")[1].toInt()
                     proxyParams
                 }
                 .let { proxyParams ->
