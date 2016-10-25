@@ -8,7 +8,6 @@ import com.intellij.util.io.ZipUtil
 import jetbrains.buildServer.agent.BuildProgressLogger
 import java.io.File
 import java.io.IOException
-import java.net.Proxy
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -21,12 +20,12 @@ import jetbrains.buildServer.log.Loggers.AGENT as AGENT_LOG
  */
 internal class DistributionDownloaderException(override val message: String, override val cause: Throwable) : Exception(message, cause)
 
-internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgressLogger, val proxy: Proxy? = null) {
+internal class KobaltDistributionDownloader(val buildProgressLogger: BuildProgressLogger) {
     companion object {
         private val RELEASE_URL = "https://api.github.com/repos/cbeust/kobalt/releases"
         private val FILE_NAME = "kobalt"
     }
-  private val kobaltVersionManager = KobaltVersionManager(proxy)
+  private val kobaltVersionManager = KobaltVersionManager()
 
     fun installIfNeeded(version: String, onSuccessDownload: (String) -> Unit, onSuccessInstall: (String) -> Unit)
             = with(version) {

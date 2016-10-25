@@ -1,14 +1,11 @@
 package com.buildServer.kobalt.common
 
-import com.buildServer.kobalt.common.http.HttpClient
-import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.httpGet
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import jetbrains.buildServer.log.Loggers
 import java.io.IOException
-import java.net.Proxy
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -18,13 +15,9 @@ import java.util.concurrent.TimeUnit
  * @author Dmitry Zhuravlev
  *         Date:  13.10.2016
  */
-class KobaltVersionManager(private val proxy: Proxy?) {
+class KobaltVersionManager() {
     companion object {
         private val RELEASE_URL = "https://api.github.com/repos/cbeust/kobalt/releases"
-    }
-
-    init {
-        FuelManager.instance.client = HttpClient(proxy)
     }
 
     fun kobaltVersions(): List<String> {

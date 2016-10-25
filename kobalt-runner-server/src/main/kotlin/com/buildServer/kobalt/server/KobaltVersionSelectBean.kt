@@ -1,7 +1,6 @@
 package com.buildServer.kobalt.server
 
 import com.buildServer.kobalt.common.KobaltVersionManager
-import com.buildServer.kobalt.common.http.ProxyLocator
 
 /**
  * @author Dmitry Zhuravlev
@@ -10,7 +9,7 @@ import com.buildServer.kobalt.common.http.ProxyLocator
 class KobaltVersionSelectBean {
     var selectedVersion = ""
     fun isVersionSelected() = selectedVersion.isNotEmpty()
-    fun getVersions() = with(KobaltVersionManager(ProxyLocator.findServerProxyConfiguration())) {
+    fun getVersions() = with(KobaltVersionManager()) {
         kobaltVersions()
     }
 }

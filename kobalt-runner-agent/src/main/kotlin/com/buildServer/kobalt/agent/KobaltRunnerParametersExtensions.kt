@@ -2,8 +2,6 @@ package com.buildServer.kobalt.agent
 
 import com.buildServer.kobalt.common.KobaltPathUtils
 import com.buildServer.kobalt.common.KobaltRunnerConstants
-import com.buildServer.kobalt.common.http.ProxyLocator
-import jetbrains.buildServer.agent.runner.JavaRunnerUtil
 import jetbrains.buildServer.runner.JavaRunnerConstants
 import jetbrains.buildServer.util.StringUtil.newLineToSpaceDelimited
 
@@ -21,12 +19,14 @@ fun Map<String, String>.getJVMArgs() = getJVMArgsString().let {argsStr->
 
 fun Map<String, String>.getJVMArgsString() = newLineToSpaceDelimited(get(JavaRunnerConstants.JVM_ARGS_KEY).orEmpty())
 
-
-fun Map<String, String>.getProxy() = ProxyLocator.findProxyConfigurationInJVMParams(JavaRunnerUtil.extractJvmArgs(get(JavaRunnerConstants.JVM_ARGS_KEY).orEmpty()))
-
 fun Map<String, String>.getPathToBuildFile() = get(KobaltRunnerConstants.PATH_TO_BUILD_FILE) ?: KobaltPathUtils.DEFAULT_KOBALT_BUILD_FILE_LOCATION
+
 fun Map<String, String>.getKobaltTasks() = get(KobaltRunnerConstants.KOBALT_TASKS).orEmpty().split(" ")
+
 fun Map<String, String>.getKobaltCmdParams() = get(KobaltRunnerConstants.KOBALT_CMD_PARAMS).orEmpty().split(" ")
+
 fun Map<String, String>.getKobaltSettingsFileContent() = get(KobaltRunnerConstants.KOBALT_SETTINGS).orEmpty()
+
 fun Map<String, String>.useKobaltWrapper() = get(KobaltRunnerConstants.USE_KOBALT_WRAPPER)?.toBoolean() ?: false
+
 fun Map<String, String>.useKobaltVersion() = get(KobaltRunnerConstants.USE_KOBALT_VERSION).orEmpty()

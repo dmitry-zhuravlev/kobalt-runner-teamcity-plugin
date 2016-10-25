@@ -2,7 +2,6 @@ package com.buildServer.kobalt.agent
 
 import com.buildServer.kobalt.common.KobaltPathUtils
 import com.buildServer.kobalt.common.KobaltVersionManager
-import com.buildServer.kobalt.common.http.ProxyLocator
 import jetbrains.buildServer.RunBuildException
 import jetbrains.buildServer.agent.AgentRuntimeProperties
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
@@ -25,10 +24,9 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
     override fun makeProgramCommandLine(): ProgramCommandLine {
         try {
             if (!runnerParameters.useKobaltWrapper()) {
-                val proxy = ProxyLocator.findAgentProxyConfiguration() ?: runnerParameters.getProxy()
-                val distributionDownloader = KobaltDistributionDownloader(logger, proxy)
+                val distributionDownloader = KobaltDistributionDownloader(logger)
                 val kobaltVersion = runnerParameters.useKobaltVersion().let { version ->
-                    if (version.isEmpty()) KobaltVersionManager(proxy).latestKobaltVersionOrDefault()
+                    if (version.isEmpty()) KobaltVersionManager().latestKobaltVersionOrDefault()
                     else version
                 }
                 distributionDownloader.installIfNeeded(kobaltVersion, {}, {})
@@ -71,9 +69,8 @@ internal open class KobaltRunnerService : BuildServiceAdapter() {
     private fun makeJarExecutionCommandLine(): SimpleProgramCommandLine {
         val env = mutableMapOf<String, String>()
         val params = mutableListOf<String>()
-        val proxy = ProxyLocator.findAgentProxyConfiguration() ?: runnerParameters.getProxy()
         val kobaltVersion = runnerParameters.useKobaltVersion().let { version ->
-            if (version.isEmpty()) KobaltVersionManager(proxy).latestKobaltVersionOrDefault() else version
+            if (version.isEmpty()) KobaltVersionManager().latestKobaltVersionOrDefault() else version
         }
         val kobaltJarAbsolutePath = KobaltPathUtils.kobaltJarPath(kobaltVersion).toFile().absolutePath
         val jvmArgs = runnerParameters.getJVMArgs()
