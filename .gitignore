@@ -1,4 +1,6 @@
 downloads/
 servers/
 .idea/
+classes/
+.gradle/
 kobalt-runner-server/src/main/resources/WEB-INF/
